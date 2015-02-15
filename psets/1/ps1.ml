@@ -3,7 +3,7 @@
 (*** Ethan Brooks ***)
 
 (* Open up the library we'll be using in this course *)
-(* open Core.Std *)
+open Core.Std 
 
 (* Problem 1 - Fill in types:
  * Replace each ??? with the appropriate type of the corresponding expression.
@@ -103,6 +103,7 @@ merge [0;3;5;711;747] [2;4;6;12];;
 (* The type signature for merge is as follows: *)
 (* merge : int list -> int list -> int list *)
 
+(*tests if the input list is ordered as specified.*)
 let rec ordered (x: int list) : bool =
     match x with
     | [] -> true
@@ -176,16 +177,21 @@ variance [1.0];;
  * function can cast an int to a float. *)
 
 (* variance : float list -> float option *)
+
+(*returns length of a list as a float*)
 let rec fl_length (x:'a list) : float =
 		match x with
 		| [] -> 0.0
 		| _::tl -> 1.0 +. fl_length tl
 ;;
+(*sums elements of a float list*)
 let rec sum (x:float list) : float =  
 		match x with
 		| [] -> 0.0
 		| hd::tl -> hd +. sum tl
 ;;
+
+(*returns mean of a float list*)
 let mean (x:float list) : float =
 		if x = [] then 0.0
 		else (sum x /. fl_length x)
@@ -193,6 +199,8 @@ let mean (x:float list) : float =
 let sq (x:float) : float =
 		x *. x
 ;;	
+
+(*calculates sum (x_i-y)^2 for any figen float list and given y*)
 let rec sum_diff_sq (x:float list) (y:float) : float option =
 		match x with
 		| [] -> Some 0.
@@ -200,13 +208,9 @@ let rec sum_diff_sq (x:float list) (y:float) : float option =
 						match sum_diff_sq tl y with
 						| Some z -> Some(sq(hd -. y) +. z)
 						| None -> None
-		| _ -> None
 ;;	
-let rec stand_dev_sq (x:float list) : float option =
-		sum_diff_sq x (mean x)
-;;
 let variance (x:float list) : float option =
-		match (x, stand_dev_sq x) with
+		match (x,sum_diff_sq x (mean x)) with
 		| (_::_::_, Some y) -> Some(1.0 /. (fl_length x -. 1.0) *. y)
 		| _ -> None
 ;;
@@ -233,12 +237,14 @@ few_divisors 12 7;;
 
 (* The type signature for few_divisors is: *)
 (* few_divisors : int -> int -> bool *)
+
+(*calulates all divisors of a given number that are greater than or equal to another given number*)
 let rec divs_at_least (x:int) (y:int) : int =
-		if x == y then 1 
-    else if x mod y == 0 then 1 + divs_at_least x (y+1)
+		if x = y then 1 
+    else if x mod y = 0 then 1 + divs_at_least x (y+1)
 		else divs_at_least x (y+1)
 ;;
-let rec few_divisors (m:int) (n:int) : bool = 
+let few_divisors (m:int) (n:int) : bool = 
 		if divs_at_least m 1 < n then true
 		else false
 ;;
@@ -305,20 +311,24 @@ let () = assert ((concat_list ", " ["Moo"]) = "Moo");;
 (* from_run_length : (int * char) list -> char list *)
 
 (*>* Problem 3 *>*)
+
+(*counts the number of repeated characters at the beginning of a given char list*)
 let rec char_reps (x:char list) : int =
 		match x with
 		| [] -> 0
 		| _::[] -> 1
 		| hd1::hd2::tl ->
-						if hd1 != hd2 then 1
+						if hd1 <> hd2 then 1
 						else 1 + char_reps (hd2::tl)
 ;;
+
+(*removes first character and all repetitions from the beginning of a given char list*)
 let rec after_reps (x:char list) :  char list = 
 		match x with
 		| [] -> []
 		| _::[] -> []
 		| hd1::hd2::tl -> 
-						if hd1 != hd2 then hd2::tl
+						if hd1 <> hd2 then hd2::tl
 						else after_reps (hd2::tl)
 ;;
 let rec to_run_length (x:char list) : (int*char) list = 
@@ -332,7 +342,7 @@ let rec from_run_length (x:(int*char) list) : char list =
     | [] -> []
     | hd::tl -> 
             match hd with
-            | (0, c) -> from_run_length tl
+            | (0, _) -> from_run_length tl
             | (n, c) -> c::(from_run_length ((n-1,c)::tl))
 
 let () = assert (to_run_length ['a';'a';'a';'a';'b';'b';'b';'b';'c';'d';'d';'d';'d'] =
@@ -360,3 +370,51 @@ let () = assert (from_run_length [(4,'a');(4,'b');(1,'c');(4,'d')] =
 
 (* The type signature for permuations is: *)
 (* permutations : int list -> int list list *)
+
+(* inserts item at a given index in a list*)
+let rec insert (a:'a) (aa:'a list) (index: int) : 'a list =
+    if index = 0 then a::aa
+    else match aa with
+    | [] -> a::[]
+    | hd::tl -> hd::(insert a tl (index-1))
+let () = assert (insert 0 [1;2;3] 2 = [1;2;0;3])
+let () = assert (insert 0 [1;2;3] 8 = [1;2;3;0])
+    
+(*remove item from a list if contained in it (otherwise list is left unchanged)*) 
+let rec remove (a:'a) (aa:'a list) : 'a list =
+    match aa with
+    | [] -> []
+    | hd::tl -> 
+            if hd = a then tl
+            else hd::(remove a tl)
+let () = assert (remove 1 [0;1;2] = [0;2])
+let () = assert (remove 1 [0;1;1;2] = [0;1;2])
+let () = assert (remove 3 [0;1;2] = [0;1;2])
+
+(* generates a list of integers between (including) two given integers *)
+let rec (--) (a:int) (b:int) : int list =
+    if a = b then a::[]
+    else if a < b then a::((a+1)--b)
+    else a::((a-1)--b)
+;;
+let () = assert (0--5 = [0;1;2;3;4;5])
+
+let interleave (a:'a) (aa: 'a list) : ('a list) list =
+    let rem_a = remove a aa in
+    List.map (0--((List.length rem_a)):int list) (insert a rem_a: int -> int list)
+;;
+let () = assert (interleave 0 [1;2;3;4;5] =
+    [[0; 1; 2; 3; 4; 5]; 
+    [1; 0; 2; 3; 4; 5]; 
+    [1; 2; 0; 3; 4; 5]; 
+    [1; 2; 3; 0; 4; 5]; 
+    [1; 2; 3; 4; 0; 5]; 
+    [1; 2; 3; 4; 5; 0]]) 
+;;
+let rec permutations (x: 'a list) : ('a list) list= 
+    match x with
+    | [] -> []::[]
+    | hd::tl -> List.concat (List.map (permutations tl:('a list) list) (interleave hd:'a list -> ('a list) list)) 
+;;
+let () = assert (permutations [1;2;3] = 
+    [[1; 2; 3]; [2; 1; 3]; [2; 3; 1]; [1; 3; 2]; [3; 1; 2]; [3; 2; 1]])
