@@ -131,8 +131,7 @@ let () = assert ((merge [2;2;4;4] [1;2;3]) = [1;2;2;2;3;4;4]);;
 let () = assert ((merge [1;3] [1;3]) = [1;1;3;3]);;
 let () = assert ((merge [-1;2;3;42] [-1;6;1001]) = [-1;-1;2;3;6;42;1001]);;
 
-
-
+  
 (*>* Problem 2c *>*)
 (* unzip should be a function which, given a list of pairs, returns a
  * pair of lists, the first of which contains each first element of
@@ -377,7 +376,7 @@ let rec insert (a:'a) (aa:'a list) (index: int) : 'a list =
     else match aa with
     | [] -> a::[]
     | hd::tl -> hd::(insert a tl (index-1))
-let () = assert (insert 0 [1;2;3] 2 = [1;2;0;3])
+let () = assert (insert 0 [1;2;3] 2 = [2;0;3])
 let () = assert (insert 0 [1;2;3] 8 = [1;2;3;0])
     
 (*remove item from a list if contained in it (otherwise list is left unchanged)*) 
@@ -410,7 +409,6 @@ let () = assert (interleave 0 [1;2;3;4;5] =
     [1; 2; 3; 0; 4; 5]; 
     [1; 2; 3; 4; 0; 5]; 
     [1; 2; 3; 4; 5; 0]]) 
-;;
 let rec permutations (x: 'a list) : ('a list) list= 
     match x with
     | [] -> []::[]

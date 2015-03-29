@@ -1,0 +1,25 @@
+package Swing1;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+
+/**
+ * Created by Ethan on 3/24/15.
+ */
+public class TextPanel extends JPanel {
+
+    private JTextArea textArea;
+
+    public TextPanel() {
+        textArea = new JTextArea();
+
+        setLayout(new BorderLayout());
+
+        add(new JScrollPane(textArea), BorderLayout.CENTER);
+    }
+
+    public void appendText(String text) {
+        textArea.append(text);
+    }
+}
