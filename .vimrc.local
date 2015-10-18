@@ -1,0 +1,16 @@
+" Change default target to pdf, if not dvi is used
+let g:Tex_DefaultTargetFormat = 'pdf'
+ 
+" Setup the compile rule for pdf to use pdflatex with synctex enabled
+let g:Tex_CompileRule_pdf = 'pdflatex -synctex=1 --interaction=nonstopmode $*' 
+ 
+" PDF display rule
+let g:Tex_ViewRule_pdf = 'open -a Skim'
+ 
+map ,ll <leader>ll
+ 
+" ,ls to forward search
+map ,ls :w<CR>:silent !/Applications/Skim.app/Contents/SharedSupport/displayline -r <C-r>=line('.')<CR> %<.pdf %<CR><CR>
+ 
+" ,lv to display pdf 
+map ,lv <leader>lv
