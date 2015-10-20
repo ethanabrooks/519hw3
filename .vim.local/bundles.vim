@@ -5,7 +5,7 @@ Plugin 'tpope/vim-sensible'
 Plugin 'tpope/vim-surround'
 Plugin 'Raimondi/delimitMate'
 Plugin 'jiangmiao/auto-pairs' 
-"Plugin 'Valloric/YouCompleteMe'
+Plugin 'Valloric/YouCompleteMe'
 
 "screen management
 Plugin 'jpalardy/vim-slime'
@@ -32,4 +32,8 @@ Plugin 'lervag/vimtex'
 
 "Python
 Bundle 'klen/python-mode'
+Bundle 'jmcantrell/vim-virtualenv'
 
+"Ruby
+Bundle 'ecomba/vim-ruby-refactoring'
+Bundle 'tpope/vim-endwise'
