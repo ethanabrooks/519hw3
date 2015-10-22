@@ -6,6 +6,9 @@ Test the online naive Bayes against the standard naive Bayes
 Author: Eric Eaton, 2014
 
 """
+from operator import methodcaller, attrgetter
+import numpy.testing as npt
+
 print(__doc__)
 
 import numpy as np
@@ -45,6 +48,19 @@ for i in range(nTrain):
 # train the boosted ONB
 modelNB = NaiveBayes(useLaplaceSmoothing=True)
 modelNB.fit(Xtrain,ytrain)
+
+def compare_models(modelNB, modelONB):
+    assert modelNB.class_counts == modelONB.class_counts
+    npt.assert_almost_equal(modelNB.classes, modelONB.classes)
+
+    assert len(modelONB.unique_feature_vals) == len(modelNB.unique_feature_vals)
+    for i in range(len(modelNB.unique_feature_vals)):
+        assert modelNB.unique_feature_vals[i] == modelONB.unique_feature_vals[i]
+    for klass in modelNB.classes:
+        npt.assert_almost_equal(
+            modelNB.feature_counts[klass], modelONB.feature_counts[klass]
+        )
+compare_models(modelNB, modelONB)
 
 # output predictions on the remaining data
 ypred_ONB = modelONB.predict(Xtest)
