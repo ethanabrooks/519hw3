@@ -10,7 +10,7 @@ from numpy.lib.scimath import log
 from numpy.ma import exp
 
 
-class masterNaiveBayes:
+class OnlineNaiveBayes:
     def __init__(self, useLaplaceSmoothing=True):
         """
         Constructor
@@ -34,16 +34,27 @@ class masterNaiveBayes:
         update_feature_counts(X, y, self.feature_counts)
         update_unique_feature_vals(X, self.unique_feature_vals)
 
-    def get_scores(self, X):
+    def get_lg_theta(self):
+        """
+        non-destructive
+        :return: array[[ log(theta_cj)]]
+        """
         if self.useLaplaceSmoothing:
             laplaceSmoothingVals = get_laplace_smoothing_vals(self.unique_feature_vals)
         else:
             laplaceSmoothingVals = None
-        self.lg_theta = get_lg_theta(
+        return get_lg_theta(
             self.class_counts, self.feature_counts, laplaceSmoothingVals
         )
+
+    def update_scores(self, X):
+        """
+        Sets self.class_priors
+        """
         self.class_priors = get_class_priors(self.class_counts)
-        return get_scores_given_class(X, self.classes, self.class_priors, self.lg_theta)
+        self.scores = get_scores_given_class(
+            X, self.classes, self.class_priors, self.get_lg_theta()
+        )
 
     def predict(self, X):
         """
@@ -53,7 +64,8 @@ class masterNaiveBayes:
         Returns:
             an n-dimensional numpy array of the predictions
         """
-        best_scores = (self.get_scores(X)).argmax(axis=1)
+        self.update_scores(X)
+        best_scores = (self.scores.argmax(axis=1))
         return self.classes[best_scores]
 
 
@@ -65,14 +77,51 @@ class masterNaiveBayes:
         Returns:
             an n-by-K numpy array of the predicted class probabilities (for K classes)
         """
-        return scores_to_probs(self.get_scores(X))
+        self.update_scores(X)
+        return scores_to_probs(self.scores)
 
 
-class NaiveBayes(masterNaiveBayes):
-    pass
+class NaiveBayes(OnlineNaiveBayes):
+    def fit(self, X, y):
+        """
+        515
+        Trains the model
+        Arguments:
+            X is a n-by-d numpy array
+            y is an n-dimensional numpy array
+        """
+        OnlineNaiveBayes.fit(self, X, y)
+        self.lg_theta = OnlineNaiveBayes.get_lg_theta(self)
+        self.class_priors = get_class_priors(self.class_counts)
 
-class OnlineNaiveBayes(masterNaiveBayes):
-    pass
+
+    def predict(self, X):
+        """
+        Used the model to predict values for each instance in X
+        Arguments:
+            X is a n-by-d numpy array
+        Returns:
+            an n-dimensional numpy array of the predictions
+        """
+        scores = get_scores_given_class(
+            X, self.classes, self.class_priors, self.get_lg_theta()
+        )
+        best_scores = scores.argmax(axis=1)
+        return self.classes[best_scores]
+
+
+    def predictProbs(self, X):
+        """
+        Used the model to predict a vector of class probabilities for each instance in X
+        Arguments:
+            X is a n-by-d numpy array
+        Returns:
+            an n-by-K numpy array of the predicted class probabilities (for K classes)
+        """
+        scores = get_scores_given_class(
+            X, self.classes, self.class_priors, self.get_lg_theta()
+        )
+        return scores_to_probs(scores)
 
 
 def get_new_classes(y, classes):
